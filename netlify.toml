@@ -1,0 +1,10 @@
+# Netlify configuration for FlowChart AI (Next.js 15)
+# The Next.js runtime plugin is installed automatically from this entry.
+# Set environment variables in the Netlify dashboard (see .env.example / DEPLOYMENT.md).
+
+[build]
+  command = "pnpm build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
