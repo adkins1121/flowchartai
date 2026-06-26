@@ -121,7 +121,30 @@ Set these in the Google / GitHub OAuth app config (replace the host):
 
 ---
 
-## 5. Post-deploy checklist
+## 5. Build-time dependency on `cdn.flowchartai.org` (important)
+
+The `pnpm build` step runs `content-collections build`, which compiles the MDX
+blog/docs content. Fumadocs' `remarkImage` plugin probes the **dimensions of
+remote images at build time** and, on failure, **re-throws** — so if any
+referenced image URL is unreachable during the build, the entire build fails
+with `Cannot process MDX file with esbuild`.
+
+The bundled blog content references images on `https://cdn.flowchartai.org/...`.
+That CDN is reachable from normal build environments (including Railway), so the
+build works there. Be aware:
+
+- Build environments with **no/blocked outbound internet** will fail this step.
+- If that CDN ever changes or the images move, the build breaks even though no
+  code changed.
+
+**Hardening options for a long-lived fork** (optional):
+- Re-host the blog images on your own storage/CDN and update the MDX references, **or**
+- Disable remote image-size probing by passing a custom `remarkImageOptions`
+  (e.g. `{ external: false }`) to the Fumadocs MDX transform in
+  `content-collections.ts`, **or**
+- Remove/trim the bundled marketing blog content you don't need under `content/`.
+
+## 6. Post-deploy checklist
 
 - [ ] `DATABASE_URL` set (password filled in) and app connects.
 - [ ] `AUTH_SECRET`, `OPENROUTER_API_KEY` set.
