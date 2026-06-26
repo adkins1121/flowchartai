@@ -1,7 +1,7 @@
 # FlowChart AI — Self-Hosting / Deployment Guide
 
-This guide covers deploying FlowChart AI to **Railway** or **Netlify** with a
-**Supabase** Postgres database. For the full list of environment variables see
+This guide covers deploying FlowChart AI to **Railway** with a **Supabase**
+Postgres database. For the full list of environment variables see
 [`.env.example`](./.env.example).
 
 ---
@@ -38,12 +38,13 @@ Supabase connection pooler. Get the password from **Supabase Dashboard →
 Project Settings → Database** (or reset it there), then use the pooler string:
 
 ```
-# Transaction pooler (recommended for serverless / Netlify)
-DATABASE_URL="postgresql://postgres.mpkbzrzfbfviiferujbc:[PASSWORD]@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
-
-# Session pooler (fine for Railway's persistent server)
+# Session pooler (recommended for Railway's persistent Node server)
 DATABASE_URL="postgresql://postgres.mpkbzrzfbfviiferujbc:[PASSWORD]@aws-0-us-east-2.pooler.supabase.com:5432/postgres"
 ```
+
+> The exact pooler host/port is shown under **Connect** in the Supabase
+> dashboard. The direct connection (`db.mpkbzrzfbfviiferujbc.supabase.co:5432`)
+> also works for Railway since it runs a long-lived server.
 
 > ⚠️ **Security — Row Level Security (RLS) is disabled** on all 9 tables.
 > The app connects as the `postgres` role over a direct connection, which
@@ -95,29 +96,19 @@ Image-to-flowchart + uploads additionally need the `STORAGE_*` (S3/R2) vars.
 
 ---
 
-## 3a. Deploy to Railway
+## 3. Deploy to Railway
 
 Railway runs the full Node server (best fit for this app). `railway.json` is
 included.
 
-1. Create a project → **Deploy from GitHub repo** → select this repo/branch.
+1. Create a project → **Deploy from GitHub repo** → select this repo and the
+   deployment branch.
 2. Railway auto-detects Next.js (Nixpacks). `railway.json` pins the build
    (`pnpm build`) and start (`pnpm start`) commands; `.nvmrc` pins Node 22.
 3. Add the environment variables from step 2 under **Variables**.
-4. Set `NEXT_PUBLIC_BASE_URL` to the Railway-generated domain (add it, redeploy
-   once the domain is known).
+4. Generate a domain under **Settings → Networking**, then set
+   `NEXT_PUBLIC_BASE_URL` to that domain and redeploy.
 5. Railway provides `PORT` automatically — `next start` honors it.
-
-## 3b. Deploy to Netlify
-
-`netlify.toml` is included and pulls in `@netlify/plugin-nextjs` automatically.
-
-1. **Add new site → Import from Git** → select this repo/branch.
-2. Build command `pnpm build` and the Next runtime are configured by `netlify.toml`.
-3. Add the environment variables from step 2 under **Site configuration →
-   Environment variables**.
-4. Set `NEXT_PUBLIC_BASE_URL` to your Netlify site URL.
-5. Use the **transaction pooler** `DATABASE_URL` (port 6543) for serverless functions.
 
 ---
 
